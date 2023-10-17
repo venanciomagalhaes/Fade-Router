@@ -1,0 +1,16 @@
+{
+    "name": "venancio/router",
+    "description": "Pacote de gerenciamento de rotas para aplicações PHP",
+    "autoload": {
+        "psr-4": {
+            "Venancio\\Router\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Venancio Magalhaes",
+            "email": "venanciomagalhaesd@gmail.com"
+        }
+    ],
+    "require": {}
+}
