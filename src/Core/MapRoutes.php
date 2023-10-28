@@ -10,6 +10,7 @@ final class  MapRoutes
     private array $routes = [];
 
     private ?array $groupMiddleware = [];
+    private ?array $singleMiddleware = [];
 
     private NamedRoutes $namedRoutes;
 
@@ -39,11 +40,28 @@ final class  MapRoutes
         return $this->groupPrefix ? "{$this->groupPrefix}{$route}" : $route;
     }
 
+    private function defineMiddlewares(string $method, string $route): void
+    {
+        if ($this->groupMiddleware) {
+            $this->routes[$method][$this->getRouteWithPrefix($route)]['middlewares'] = $this->groupMiddleware;
+        }
+
+        if ($this->singleMiddleware) {
+            $this->routes[$method][$this->getRouteWithPrefix($route)]['middlewares'] = $this->singleMiddleware;
+        }
+    }
+
+    private function clearSingleMiddleware(): void
+    {
+        $this->setSingleMiddleware(null);
+    }
+
     public function setRoute(string $method, string $route, array $action): void
     {
         $this->routes[$method][$this->getRouteWithPrefix($route)] = $action;
-
+        $this->defineMiddlewares($method, $route);
         $this->setLastRouteRegistered($route);
+        $this->clearSingleMiddleware();
     }
 
     public function setLastRouteRegistered(string $lastRouteRegistered): void
@@ -68,13 +86,26 @@ final class  MapRoutes
         $this->namedRoutes->setRoute($name,$lastRoute);
     }
 
+    public function setSingleMiddleware(?array $middlewares): void
+    {
+        if($middlewares){
+            foreach ($middlewares as $middleware){
+                $this->singleMiddleware[] = $middleware;
+            }
+            return;
+        }
+        $this->singleMiddleware = null;
+    }
+
     public function setGroupMiddleware(?array $middlewares): void
     {
         if(is_array($middlewares)){
             foreach ($middlewares as $middleware){
                 $this->groupMiddleware[] = $middleware;
             }
+            return;
         }
+        $this->groupMiddleware = null;
     }
 
     public function setGroupName(?string $groupName): void
@@ -86,7 +117,5 @@ final class  MapRoutes
     {
         $this->groupPrefix = $groupPrefix;
     }
-
-
 
 }

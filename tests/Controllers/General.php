@@ -22,7 +22,7 @@ class General
 
     public function edit()
     {
-
+        echo "OK";
     }
 
     public function update()

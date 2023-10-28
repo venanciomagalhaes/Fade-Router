@@ -6,8 +6,8 @@ use Venancio\Fade\Core\Interfaces\Middleware;
 
 class Example implements Middleware
 {
-    public function handle():bool
+    public function handle():void
     {
-        return false;
+        echo ('passou') . PHP_EOL;die;
     }
 }

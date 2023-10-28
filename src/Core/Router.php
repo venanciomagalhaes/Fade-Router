@@ -2,6 +2,7 @@
 
 namespace Venancio\Fade\Core;
 
+use Venancio\Fade\Core\Interfaces\Middleware;
 use Venancio\Fade\Exceptions\FallbackInternalServerErrorControllerUndefined;
 use Venancio\Fade\Exceptions\FallbackInternalServerErrorMethodUndefined;
 use Venancio\Fade\Exceptions\FallbackNotFoundControllerUndefined;
@@ -94,9 +95,10 @@ final class Router
         self::$mapRoutes->setNamedRoute($name);
     }
 
-    public function middleware()
+    public function middleware(array $middlewares):self
     {
-
+        self::$mapRoutes->setSingleMiddleware($middlewares);
+        return $this;
     }
 
     public static function getNamedRoute(string $name, array $params = []): string
@@ -209,14 +211,53 @@ final class Router
         return [$request, ...$this->paramsURI];
     }
 
+    private function hasMiddleware(mixed $action): bool
+    {
+        return array_key_exists('middlewares', $action);
+    }
+
+    private function isValidMiddleware(mixed $middleware): bool
+    {
+        return $middleware instanceof Middleware;
+    }
+
+    private function dispatchMiddleware($middlewares1): void
+    {
+        $middlewares = $middlewares1;
+        foreach ($middlewares as $middleware) {
+            $middleware = (new $middleware);
+            if ($this->isValidMiddleware($middleware)) {
+                $middleware->handle();
+            }
+        }
+    }
+
+    private function execMiddlewares(mixed $action): void
+    {
+        if ($this->hasMiddleware($action)) {
+            $this->dispatchMiddleware($action['middlewares']);
+        }
+    }
+    
+    private function execAction(mixed $action): void
+    {
+        $controller = $action[0];
+        $method = $action[1];
+        call_user_func_array([new ($controller), $method], $this->getParamsToControllers());
+    }
+
+    private function isCurrentURI(int|string $route): bool
+    {
+        return $this->requestUri == $route;
+    }
+
     private function exec(): string
     {
        try{
            foreach (self::$mapRoutes->getRoutesByMethod($this->requestMethod) as $route => $action) {
-               if ($this->requestUri == $route) {
-                   $controller = $action[0];
-                   $method =  $action[1];
-                   call_user_func_array([new ($controller), $method], $this->getParamsToControllers());
+               if ($this->isCurrentURI($route)) {
+                   $this->execMiddlewares($action);
+                   $this->execAction($action);
                    return '200';
                }
            }
