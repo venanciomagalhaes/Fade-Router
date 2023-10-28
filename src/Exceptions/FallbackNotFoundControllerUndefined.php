@@ -1,8 +1,8 @@
 <?php
 
-namespace Venancio\Router\Exceptions;
+namespace Venancio\Fade\Exceptions;
 
-class FallBackInternalServerErrorMethodUndefined extends \Exception
+final class FallbackNotFoundControllerUndefined extends \Exception
 {
     public function __construct(string $message = "", int $code = 0, ?Throwable $previous = null)
     {

@@ -1,17 +1,20 @@
 <?php
 
-namespace Venancio\Router\Core;
+namespace Venancio\Fade\Core;
 
-use Venancio\Router\Exceptions\FallBackInternalServerErrorControllerUndefined;
-use Venancio\Router\Exceptions\FallBackInternalServerErrorMethodUndefined;
-use Venancio\Router\Exceptions\FallBackNotFoundControllerUndefined;
-use Venancio\Router\Exceptions\FallBackNotFoundMethodUndefined;
+use Venancio\Fade\Exceptions\FallbackInternalServerErrorControllerUndefined;
+use Venancio\Fade\Exceptions\FallbackInternalServerErrorMethodUndefined;
+use Venancio\Fade\Exceptions\FallbackNotFoundControllerUndefined;
+use Venancio\Fade\Exceptions\FallbackNotFoundMethodUndefined;
+use Venancio\Fade\Exceptions\NotFound;
 
-class Router
+final class Router
 {
     private string $requestMethod;
     private string $requestUri;
-    private MapRoutes $mapRoutes;
+
+    private array $paramsURI = [];
+    private static MapRoutes $mapRoutes;
 
     private ?string $fallBackNotFoundController = null;
     private ?string $fallBackNotFoundMethod = null;
@@ -22,32 +25,83 @@ class Router
     public function __construct()
     {
         $this->requestUri = $_SERVER['REQUEST_URI'];
-        $this->requestMethod = $_SERVER['REQUEST_METHOD'];
-        $this->mapRoutes = new MapRoutes();
+        $this->requestMethod = $_POST['_method'] ?? $_SERVER['REQUEST_METHOD'];
+        self::$mapRoutes = new MapRoutes();
     }
 
     public function get(string $route, array $action): self
     {
-        $this->mapRoutes->setRoute('GET', $route, $action);
+        self::$mapRoutes->setRoute('GET', $route, $action);
         return $this;
     }
 
     public function post(string $route, array $action):self
     {
-        $this->mapRoutes->setRoute('POST', $route, $action);
+        self::$mapRoutes->setRoute('POST', $route, $action);
         return $this;
     }
 
     public function put(string $route, array $action):self
     {
-        $this->mapRoutes->setRoute('PUT', $route, $action);
+        self::$mapRoutes->setRoute('PUT', $route, $action);
         return $this;
     }
 
     public function delete(string $route, array $action):self
     {
-        $this->mapRoutes->setRoute('DELETE', $route, $action);
+        self::$mapRoutes->setRoute('DELETE', $route, $action);
         return $this;
+    }
+
+    private function setGroupName(array $options): void
+    {
+        if(isset($options['name'])){
+            self::$mapRoutes->setGroupName($options['name']);
+        }
+    }
+
+    private function setGroupPrefix(array $options): void
+    {
+        if(isset($options['prefix'])){
+            self::$mapRoutes->setGroupPrefix($options['prefix']);
+        }
+    }
+    private function clearGroup(): void
+    {
+        self::$mapRoutes->setGroupMiddleware(null);
+        self::$mapRoutes->setGroupPrefix(null);
+        self::$mapRoutes->setGroupName(null);
+    }
+
+    private function setGroupMiddleware(array $options): void
+    {
+        if(isset($options['middleware'])){
+            self::$mapRoutes->setGroupMiddleware($options['middleware']);
+        }
+    }
+
+    public function group(array $options, \Closure $callback): void
+    {
+        $this->setGroupMiddleware($options);
+        $this->setGroupPrefix($options);
+        $this->setGroupName($options);
+        $callback();
+        $this->clearGroup();
+    }
+
+    public function name(string $name): void
+    {
+        self::$mapRoutes->setNamedRoute($name);
+    }
+
+    public function middleware()
+    {
+
+    }
+
+    public static function getNamedRoute(string $name, array $params = []): string
+    {
+       return self::$mapRoutes->getNamedRoute($name, $params);
     }
 
     public function fallbackNotFound(string $controller, string $method): void
@@ -62,18 +116,78 @@ class Router
         $this->fallBackInternalServerErrorMethod = $method;
     }
 
-
-    public function isValidRoute(): bool
+    private function decomposeCurrentRequestUri(): array
     {
-        return array_key_exists($this->requestUri,  $this->mapRoutes->getRoutesByMethod($this->requestMethod));
+        return explode('/', trim( $this->requestUri, '/'));
     }
 
-    public function verifyFallBackDefined(): void
+    private function decomposePatternUri(string $patternUri): array
     {
-        $this->verifyProperty($this->fallBackNotFoundController, FallBackNotFoundControllerUndefined::class);
-        $this->verifyProperty($this->fallBackNotFoundMethod, FallBackNotFoundMethodUndefined::class);
-        $this->verifyProperty($this->fallBackInternalServerErrorController, FallBackInternalServerErrorControllerUndefined::class);
-        $this->verifyProperty($this->fallBackInternalServerErrorMethod, FallBackInternalServerErrorMethodUndefined::class);
+        return explode('/', trim($patternUri, '/'));
+    }
+
+    private function notIsCompatibleUriAndPattern(array $uriParts, array $patternParts): bool
+    {
+        return count($uriParts) !== count($patternParts);
+    }
+
+    private function isUriPartEqualsUriPatternsPart($patternParts, $uriParts): bool
+    {
+        return $patternParts === $uriParts;
+    }
+
+    private function isCompatibleParams(array $uriParts, array $patternParts): bool
+    {
+        $match = true;
+        for ($i = 0; $i < count($uriParts); $i++) {
+            if ($this->isUriPartEqualsUriPatternsPart($patternParts[$i], $uriParts[$i])) continue;
+            if (preg_match('/\{(\w+)\}/', $patternParts[$i], $matches)) {
+                $this->paramsURI[] = $uriParts[$i];
+                continue;
+            }
+            $match = false;
+            break;
+        }
+        return $match;
+    }
+
+    private function isValidRoute(): bool
+    {
+        $routesByMethod = self::$mapRoutes->getRoutesByMethod($this->requestMethod);
+        if($routesByMethod){
+            foreach ($routesByMethod as $patternUri => $action) {
+                $uriParts = $this->decomposeCurrentRequestUri();
+                $patternParts = $this->decomposePatternUri($patternUri);
+                if ($this->notIsCompatibleUriAndPattern($uriParts, $patternParts))  continue;
+                if ($this->isCompatibleParams($uriParts, $patternParts)) {
+                    $this->requestUri = $patternUri;
+                    break;
+                }
+            }
+            return isset (self::$mapRoutes->getRoutesByMethod($this->requestMethod)[$this->requestUri]);
+        }
+        return false;
+    }
+
+
+    private function verifyFallBackDefined(): void
+    {
+        $this->verifyProperty(
+            $this->fallBackNotFoundController,
+            FallbackNotFoundControllerUndefined::class
+        );
+        $this->verifyProperty(
+            $this->fallBackNotFoundMethod,
+            FallbackNotFoundMethodUndefined::class
+        );
+        $this->verifyProperty(
+            $this->fallBackInternalServerErrorController,
+            FallbackInternalServerErrorControllerUndefined::class
+        );
+        $this->verifyProperty(
+            $this->fallBackInternalServerErrorMethod,
+            FallbackInternalServerErrorMethodUndefined::class
+        );
     }
 
     private function verifyProperty($property, $exceptionClass): void
@@ -88,35 +202,53 @@ class Router
         call_user_func_array([new ( $this->fallBackInternalServerErrorController),  $this->fallBackInternalServerErrorMethod], [$throwable]);
     }
 
-    private function exec(): void
+    private function getParamsToControllers(): array
+    {
+        $request = $_POST ?? $_GET;
+        $request['FILES'] = $_FILES;
+        return [$request, ...$this->paramsURI];
+    }
+
+    private function exec(): string
     {
        try{
-           foreach ($this->mapRoutes->getRoutesByMethod($this->requestMethod) as $route => $action) {
+           foreach (self::$mapRoutes->getRoutesByMethod($this->requestMethod) as $route => $action) {
                if ($this->requestUri == $route) {
                    $controller = $action[0];
                    $method =  $action[1];
-                   call_user_func_array([new ($controller), $method], []);
+                   call_user_func_array([new ($controller), $method], $this->getParamsToControllers());
+                   return '200';
                }
            }
-       }catch (\Throwable $throwable){
+       } catch (NotFound $exception) {
+           $this->execFallBackNotFound();
+           return '404';
+       } catch (\Throwable $throwable){
            $this->execFallBackInternalServerError($throwable);
+           return '500';
        }
     }
 
-    private function execFallBackNotFound(): void
+    private function execFallBackNotFound(): string
     {
         call_user_func_array([new ($this->fallBackNotFoundController),  $this->fallBackNotFoundMethod], []);
+        return '404';
     }
 
-    public function dispatch(): void
+    private function finally(): string
+    {
+        return $this->isValidRoute() ? $this->exec() : $this->execFallBackNotFound();
+    }
+
+    public function dispatch(): ?string
     {
         $this->verifyFallBackDefined();
-        $this->isValidRoute() ?  $this->exec() :  $this->execFallBackNotFound() ;
+        return $this->finally();
     }
 
-    public function teste()
+    public function getRoutes(): array
     {
-        var_dump($this->mapRoutes->getRoutesByMethod($this->requestMethod));
+        return self::$mapRoutes->getRoutes();
     }
 
 }

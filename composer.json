@@ -3,7 +3,8 @@
     "description": "Pacote de gerenciamento de rotas para aplicações PHP",
     "autoload": {
         "psr-4": {
-            "Venancio\\Router\\": "src/"
+            "Venancio\\Fade\\": "src/",
+            "Venancio\\Fade\\Tests\\": "tests/"
         }
     },
     "authors": [
@@ -12,5 +13,7 @@
             "email": "venanciomagalhaesd@gmail.com"
         }
     ],
-    "require": {}
+    "require-dev": {
+        "phpunit/phpunit": "^10.4"
+    }
 }
