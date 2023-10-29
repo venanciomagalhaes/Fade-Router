@@ -122,7 +122,7 @@ We appreciate contributions from any member of the PHP community interested in i
 
 ## License
 
-This package is licensed under the [MIT License](LINK_TO_LICENSE). Please refer to the LICENSE file for details.
+This package is licensed under the [MIT License](https://github.com/venanciomagalhaes/Fade-Router/blob/main/LICENSE). Please refer to the LICENSE file for details.
 
 ## Authors
 
