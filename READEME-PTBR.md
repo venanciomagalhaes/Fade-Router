@@ -224,8 +224,8 @@ Agradecemos a contribuição de qualquer membro da comunidade PHP interessado em
 
 ## Licença
 
-Este pacote é licenciado sob a [MIT] License. Consulte o arquivo LICENSE para obter detalhes.
-
+Este pacote é licenciado sob a [MIT](https://github.com/venanciomagalhaes/Fade-Router/blob/main/LICENSE) License. Consulte o arquivo LICENSE para obter detalhes.
+/
 ## Autores
 
 Desenvolvido com paixão por [Venâncio Magalhães](https://www.linkedin.com/in/deividsonvm/).
