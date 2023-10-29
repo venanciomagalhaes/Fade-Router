@@ -188,18 +188,45 @@ class AuthMiddleware implements Middleware
 ````
 Além disso, em rotas que possuem parâmetros dinâmicos esses parâmetros podem ser recuperados dentro do middleware utilizando a propriedade ```$this->params```, que retornará um array com os parâmetros dinâmicos na ordem de fornecimento.
 
+### Definindo um grupo de rotas
+Muitas vezes desejamos que um conjunto de rotas compartilhem de uma mesma configuração: seja um prefixo para as rotas, um prefixo para os nomes das rotas ou mesmo middlewares em comuns. Para isso, com Fade\Router podemos facilmente definir um grupo de rotas que vai compartilhar de determinada configuração. Para isso, basta invocar o método ```group()``` que espera dois parâmetros: um array associativo de configuração - que pode possuir as chaves ```prefix``` (para prefixo de rotas), ```name``` (para prefixo de nome de rotas) e ```middleware``` (para compartilharem um middleware em comum) - e uma função anônima onde as rotas do grupo poderão ser definidas individualmente:
+
+````php
+$router->group(['prefix' => 'admin', 'name' => 'admin.', 'middleware' => [AuthMiddleware::class, AdminMiddleware::class]], function () use ($router){
+        $router->put('/user/{id}', [UserController::class, 'update'])->name('user.update');  // rota: PUT admin/user/{id} | name : admin.user.update
+        $router->delete('/user/{id}', [UserController::class, 'destroy'])->name('user.destroy'); // rota: DELETE admin/user/{id} | name : admin.user.destroy
+});
+````
+Dentro de um group podemos definir outros groups, assim como podemos definir middlewares individuais para rotas dentro do grupo.
+
+
+### Rotas de gerenciamento de erros (404 e 500)
+
+Como mencionado anteriormente, o Fade\Router oferece tratamento diferenciado para erros 404 (not found) e 500 (internal server error). Portanto, antes de realizar o despacho do $router, é necessário definir as duas rotas de fallback. Em cada método, é esperada a classe controladora seguida do método que será acionado na ocorrência do erro. Isso permite definir, por exemplo, uma view ou alguma ação específica para erros do tipo 400 ou 500.
+
+```php
+$router->fallbackNotFound(NotFound::class, 'report'); // 400
+$router->fallbackInternalServerError(InternalServerError::class, 'report'); // 500
+```
+
+Além disso, Fade\Router possui um tratamento especial que permite que um usuário seja facilmente redirecionado para a action de 404 (not found). Para isso, basta em sua aplicação lançar uma exception não tratada do tipo ```Venancio\Fade\Core\Exceptions\NotFound``` e então a action de fallbackNotFound será acionada.
+
+### Logs
+Eventuais exceptions relacionadas as configurações de Fade\Router bem como as demais exceptions não tratadas na aplicação possuem registro de log em ```logs/fade/router.log```. Em casos de dúvidas, verificar o log será um bom começo para o debug da aplicação.
+
+### Tests
+Fade\Router possui mais de 38 testes que podem ser verificados e acompanhados executando ```vendor/bin/phpunit tests/ --testdox --colors```.
+
 ## Contribuições
 
 Agradecemos a contribuição de qualquer membro da comunidade PHP interessado em aprimorar o Fade\Router. Sinta-se à vontade para abrir problemas ou enviar solicitações de pull em nosso repositório no GitHub.
 
 ## Licença
 
-Este pacote é licenciado sob a [inserir nome da licença] License. Consulte o arquivo LICENSE para obter detalhes.
+Este pacote é licenciado sob a [MIT] License. Consulte o arquivo LICENSE para obter detalhes.
 
 ## Autores
 
-Desenvolvido com paixão por [seu nome ou nome da equipe].
+Desenvolvido com paixão por [Venâncio Magalhães](https://www.linkedin.com/in/deividsonvm/).
 
-Dúvidas ou Sugestões? Entre em contato em [seu endereço de e-mail ou site].
-
-**O Fade\Router - Simplificando o Roteamento em PHP para Você!**
+Dúvidas ou Sugestões? Entre em contato.
