@@ -216,7 +216,7 @@ Além disso, Fade\Router possui um tratamento especial que permite que um usuár
 Eventuais exceptions relacionadas as configurações de Fade\Router bem como as demais exceptions não tratadas na aplicação possuem registro de log em ```logs/fade/router.log```. Em casos de dúvidas, verificar o log será um bom começo para o debug da aplicação.
 
 ### Tests
-Fade\Router possui mais de 38 testes que podem ser verificados e acompanhados executando ```vendor/bin/phpunit tests/ --testdox --colors```.
+Fade\Router possui mais de 38 testes que podem ser verificados e acompanhados executando  ```composer require phpunit/phpunit --dev``` e ```vendor/bin/phpunit vendor/fade/router/tests/ --testdox --colors```.
 
 ## Contribuições
 
