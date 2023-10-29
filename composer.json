@@ -1,5 +1,5 @@
 {
-    "name": "venancio/router",
+    "name": "fade/router",
     "description": "Pacote de gerenciamento de rotas para aplicações PHP",
     "autoload": {
         "psr-4": {

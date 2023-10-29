@@ -2,9 +2,10 @@
 
 namespace Venancio\Fade\Core;
 
-use Venancio\Fade\Exceptions\DuplicateNamedRoute;
-use Venancio\Fade\Exceptions\InsufficientArgumentsForTheRoute;
-use Venancio\Fade\Exceptions\UndefinedNamedRoute;
+use Venancio\Fade\Core\Exceptions\DuplicateNamedRoute;
+use Venancio\Fade\Core\Exceptions\InsufficientArgumentsForTheRoute;
+use Venancio\Fade\Core\Exceptions\UndefinedNamedRoute;
+use Venancio\Fade\Core\Log\Logger;
 
 final class NamedRoutes
 {
@@ -23,7 +24,9 @@ final class NamedRoutes
     private function throwDuplicateNamedRoute(string $name): void
     {
         if (key_exists($name, $this->routes)) {
-            throw new DuplicateNamedRoute();
+            $exception = new DuplicateNamedRoute();
+            Logger::getInstance()->register($exception);
+            throw $exception;
         }
     }
 
@@ -71,7 +74,9 @@ final class NamedRoutes
         $paramsInArgument = $this->countParamsInArgument($params);
         $paramsNecessary = $this->countParametersNecessaryForTheRoute($routeParams);
         if ($paramsInArgument != $paramsNecessary) {
-            throw new InsufficientArgumentsForTheRoute("{$paramsInArgument} arguments were provided, but the route expects {$paramsNecessary}");
+            $exception = new InsufficientArgumentsForTheRoute("{$paramsInArgument} arguments were provided, but the route expects {$paramsNecessary}");
+            Logger::getInstance()->register($exception);
+            throw $exception;
         }
     }
 

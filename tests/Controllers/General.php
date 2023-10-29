@@ -4,25 +4,23 @@ namespace Venancio\Fade\Tests\Controllers;
 
 class General
 {
-    public function index(): true
+    public function index(): void
     {
-        echo "OK" . PHP_EOL;
-        return true;
     }
 
-    public function show()
-    {
-
-    }
-
-    public function store()
+    public function show():void
     {
 
     }
 
-    public function edit()
+    public function store():void
     {
-        echo "OK";
+
+    }
+
+    public function edit():void
+    {
+
     }
 
     public function update()
@@ -30,18 +28,18 @@ class General
 
     }
 
-    public function destroy()
+    public function destroy():void
     {
 
     }
 
-    public function forcingNotFound()
+    public function forcingNotFound():void
     {
-        throw new \Venancio\Fade\Exceptions\NotFound();
+        throw new \Venancio\Fade\Core\Exceptions\NotFound();
     }
 
-    public function internalServerError()
+    public function internalServerError():void
     {
-        throw new \Exception('');
+        throw new \Exception('Testing internal server error');
     }
 }

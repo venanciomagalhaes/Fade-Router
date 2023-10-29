@@ -3,17 +3,20 @@
 namespace Venancio\Fade\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Venancio\Fade\Core\Exceptions\DuplicateNamedRoute;
+use Venancio\Fade\Core\Exceptions\FallbackInternalServerErrorControllerUndefined;
+use Venancio\Fade\Core\Exceptions\FallbackInternalServerErrorMethodUndefined;
+use Venancio\Fade\Core\Exceptions\FallbackNotFoundControllerUndefined;
+use Venancio\Fade\Core\Exceptions\FallbackNotFoundMethodUndefined;
+use Venancio\Fade\Core\Exceptions\InsufficientArgumentsForTheRoute;
+use Venancio\Fade\Core\Exceptions\InvalidTypeMiddleware;
+use Venancio\Fade\Core\Exceptions\UndefinedNamedRoute;
 use Venancio\Fade\Core\Router;
-use Venancio\Fade\Exceptions\DuplicateNamedRoute;
-use Venancio\Fade\Exceptions\FallbackInternalServerErrorControllerUndefined;
-use Venancio\Fade\Exceptions\FallbackInternalServerErrorMethodUndefined;
-use Venancio\Fade\Exceptions\FallbackNotFoundControllerUndefined;
-use Venancio\Fade\Exceptions\FallbackNotFoundMethodUndefined;
-use Venancio\Fade\Exceptions\InsufficientArgumentsForTheRoute;
-use Venancio\Fade\Exceptions\UndefinedNamedRoute;
 use Venancio\Fade\Tests\Controllers\General;
 use Venancio\Fade\Tests\Controllers\InternalServerError;
 use Venancio\Fade\Tests\Controllers\NotFound;
+use Venancio\Fade\Tests\Middlewares\Example;
+use Venancio\Fade\Tests\Middlewares\IncorrectMiddleware;
 
 class RouterTest extends TestCase
 {
@@ -84,8 +87,7 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'GET';
         $router = new Router();
         $router->get('/home', [General::class, 'index']);
-        $router->fallbackNotFound(NotFound::class, 'report');
-        $router->fallbackInternalServerError(InternalServerError::class, 'report');
+        $this->defineFallbacks($router);
         $this->assertEquals(
             self::SUCCESS,
             $router->dispatch(),
@@ -102,8 +104,7 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_METHOD'] = 'POST';
         $router = new Router();
         $router->post('/history', [General::class, 'store']);
-        $router->fallbackNotFound(NotFound::class, 'report');
-        $router->fallbackInternalServerError(InternalServerError::class, 'report');
+        $this->defineFallbacks($router);
         $this->assertEquals(
             self::SUCCESS,
             $router->dispatch(),
@@ -121,8 +122,7 @@ class RouterTest extends TestCase
         $_POST['_method'] = 'PUT';
         $router = new Router();
         $router->put('/blog/22', [General::class, 'update']);
-        $router->fallbackNotFound(NotFound::class, 'report');
-        $router->fallbackInternalServerError(InternalServerError::class, 'report');
+        $this->defineFallbacks($router);
         $this->assertEquals(
             self::SUCCESS,
             $router->dispatch(),
@@ -140,8 +140,7 @@ class RouterTest extends TestCase
         $_POST['_method'] = 'DELETE';
         $router = new Router();
         $router->delete('/blog/22', [General::class, 'destroy']);
-        $router->fallbackNotFound(NotFound::class, 'report');
-        $router->fallbackInternalServerError(InternalServerError::class, 'report');
+        $this->defineFallbacks($router);
         $this->assertEquals(
             self::SUCCESS,
             $router->dispatch(),
@@ -377,6 +376,65 @@ class RouterTest extends TestCase
 
     }
 
+    private function defineFallbacks(Router $router): void
+    {
+        $router->fallbackNotFound(NotFound::class, 'report');
+        $router->fallbackInternalServerError(InternalServerError::class, 'report');
+    }
+
+    /**
+     * @test
+     */
+    public function defineSingleMiddleware()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/example/single/middleware';
+        $router = new Router();
+        $router->middleware([Example::class])->get('/example/single/middleware', [General::class, 'index'])->name('example');
+        $router->post('/contact/single', [General::class, 'store'])->name('contact.store');
+        $this->defineFallbacks($router);
+        $this->assertEquals(self::SUCCESS, $router->dispatch());
+
+        /// new request outside of middleware
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/contact/single';
+        $router = new Router();
+        $router->middleware([Example::class])->get('/example/single/middleware', [General::class, 'index'])->name('example');
+        $router->post('/contact/single', [General::class, 'store'])->name('contact.store');
+        $this->defineFallbacks($router);
+        $this->assertEquals(self::SUCCESS, $router->dispatch());
+
+    }
+
+
+    /**
+     * @test
+     */
+    public function defineGroupMiddleware()
+    {
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_SERVER['REQUEST_URI'] = '/example/middleware';
+        $router = new Router();
+        $router->group(['middleware' => [Example::class]], function  () use($router) {
+            $router->get('/example/middleware', [General::class, 'index'])->name('example');
+        });
+        $router->post('/contact', [General::class, 'store'])->name('contact.store');
+        $this->defineFallbacks($router);
+        $this->assertEquals(self::SUCCESS, $router->dispatch());
+
+        /// new request outside of middleware
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['REQUEST_URI'] = '/contact';
+        $router = new Router();
+        $router->group(['middleware' => [Example::class]], function  () use($router) {
+            $router->get('/example/middleware', [General::class, 'index'])->name('example');
+        });
+        $router->post('/contact', [General::class, 'store'])->name('contact.store');
+        $this->defineFallbacks($router);
+        $this->assertEquals(self::SUCCESS, $router->dispatch());
+
+    }
+
     /**
      * @test
      */
@@ -421,6 +479,19 @@ class RouterTest extends TestCase
         Router::getNamedRoute('contact.theme.delete', [2, 5]);
     }
 
+    /**
+     * @test
+     */
+    public function checksExceptionThrowingWhenMiddlewareDoesNotImplementTheInterface()
+    {
+        $this->expectException(InvalidTypeMiddleware::class);
+        $router = new Router();
+        $router->middleware([IncorrectMiddleware::class])->get('/home');
+        $router->fallbackNotFound(NotFound::class, 'report');
+        $router->fallbackInternalServerError(InternalServerError::class, '');
+        $router->dispatch();
+    }
+
 
     /**
      * @test
@@ -431,8 +502,7 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/home';
         $router = new Router();
         $router->get('/', [General::class, 'index']);
-        $router->fallbackNotFound(NotFound::class, 'report');
-        $router->fallbackInternalServerError(InternalServerError::class, 'report');
+        $this->defineFallbacks($router);
         self::assertEquals(
             '404'
             , $router->dispatch(),
@@ -448,9 +518,8 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/home';
         $router = new Router();
         $router->get('/home', [General::class, 'forcingNotFound']);
-        $router->fallbackNotFound(NotFound::class, 'report');
-        $router->fallbackInternalServerError(InternalServerError::class, 'report');
-        self::assertEquals(
+        $this->defineFallbacks($router);
+        $this->assertEquals(
             '404'
             , $router->dispatch(),
             'Error testing fallback route not found');
@@ -465,12 +534,12 @@ class RouterTest extends TestCase
         $_SERVER['REQUEST_URI'] = '/home';
         $router = new Router();
         $router->get('/home', [General::class, 'internalServerError']);
-        $router->fallbackNotFound(NotFound::class, 'report');
-        $router->fallbackInternalServerError(InternalServerError::class, 'report');
+        $this->defineFallbacks($router);
         self::assertEquals(
             '500'
             , $router->dispatch(),
             'Error testing fallback route not found');
     }
+
 
 }

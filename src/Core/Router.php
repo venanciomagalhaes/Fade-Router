@@ -2,12 +2,14 @@
 
 namespace Venancio\Fade\Core;
 
+use Venancio\Fade\Core\Exceptions\FallbackInternalServerErrorControllerUndefined;
+use Venancio\Fade\Core\Exceptions\FallbackInternalServerErrorMethodUndefined;
+use Venancio\Fade\Core\Exceptions\FallbackNotFoundControllerUndefined;
+use Venancio\Fade\Core\Exceptions\FallbackNotFoundMethodUndefined;
+use Venancio\Fade\Core\Exceptions\InvalidTypeMiddleware;
+use Venancio\Fade\Core\Exceptions\NotFound;
 use Venancio\Fade\Core\Interfaces\Middleware;
-use Venancio\Fade\Exceptions\FallbackInternalServerErrorControllerUndefined;
-use Venancio\Fade\Exceptions\FallbackInternalServerErrorMethodUndefined;
-use Venancio\Fade\Exceptions\FallbackNotFoundControllerUndefined;
-use Venancio\Fade\Exceptions\FallbackNotFoundMethodUndefined;
-use Venancio\Fade\Exceptions\NotFound;
+use Venancio\Fade\Core\Log\Logger;
 
 final class Router
 {
@@ -25,7 +27,7 @@ final class Router
 
     public function __construct()
     {
-        $this->requestUri = $_SERVER['REQUEST_URI'];
+        $this->requestUri = $_GET['url'] ?? $_SERVER['REQUEST_URI'];
         $this->requestMethod = $_POST['_method'] ?? $_SERVER['REQUEST_METHOD'];
         self::$mapRoutes = new MapRoutes();
     }
@@ -74,9 +76,17 @@ final class Router
         self::$mapRoutes->setGroupName(null);
     }
 
+    private function verifyMiddleware($middleware): void
+    {
+        foreach ($middleware as $middleware) {
+            $this->isValidMiddleware($middleware);
+        }
+    }
+
     private function setGroupMiddleware(array $options): void
     {
         if(isset($options['middleware'])){
+            $this->verifyMiddleware($options['middleware']);
             self::$mapRoutes->setGroupMiddleware($options['middleware']);
         }
     }
@@ -97,6 +107,7 @@ final class Router
 
     public function middleware(array $middlewares):self
     {
+        $this->verifyMiddleware($middlewares);
         self::$mapRoutes->setSingleMiddleware($middlewares);
         return $this;
     }
@@ -195,7 +206,9 @@ final class Router
     private function verifyProperty($property, $exceptionClass): void
     {
         if (empty($property)) {
-            throw new $exceptionClass();
+            $exception = new $exceptionClass();
+            Logger::getInstance()->register($exception);
+            throw $exception ;
         }
     }
 
@@ -206,9 +219,7 @@ final class Router
 
     private function getParamsToControllers(): array
     {
-        $request = $_POST ?? $_GET;
-        $request['FILES'] = $_FILES;
-        return [$request, ...$this->paramsURI];
+        return [...$this->paramsURI];
     }
 
     private function hasMiddleware(mixed $action): bool
@@ -218,17 +229,24 @@ final class Router
 
     private function isValidMiddleware(mixed $middleware): bool
     {
-        return $middleware instanceof Middleware;
+        if((new $middleware) instanceof Middleware){
+            return true;
+        }
+        $exception = new InvalidTypeMiddleware();
+        Logger::getInstance()->register($exception);
+        throw $exception;
     }
 
     private function dispatchMiddleware($middlewares1): void
     {
         $middlewares = $middlewares1;
         foreach ($middlewares as $middleware) {
-            $middleware = (new $middleware);
-            if ($this->isValidMiddleware($middleware)) {
-                $middleware->handle();
-            }
+            /**
+             * @var Middleware $middleware
+             */
+            $middleware = new $middleware();
+            $middleware->setParams($this->getParamsToControllers());
+            $middleware->handle();
         }
     }
 
@@ -262,9 +280,11 @@ final class Router
                }
            }
        } catch (NotFound $exception) {
+           Logger::getInstance()->register($exception);
            $this->execFallBackNotFound();
            return '404';
        } catch (\Throwable $throwable){
+           Logger::getInstance()->register($throwable);
            $this->execFallBackInternalServerError($throwable);
            return '500';
        }
@@ -291,5 +311,7 @@ final class Router
     {
         return self::$mapRoutes->getRoutes();
     }
+
+
 
 }
