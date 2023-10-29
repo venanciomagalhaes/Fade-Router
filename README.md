@@ -148,15 +148,15 @@ Como, de forma nativa, navegadores não suportam o uso dos métodos PUT e DELETE
 Visando facilitar o seu uso, Fade\Router possui métodos estáticos em sua classe que já fazem esse serviço, bastando apenas invocar cada um, respectivamente, ```methodPUT()``` e ```methodDELETE()```
 
 ```php
-	<form action="<?= \Venancio\Fade\Core\Router::getNamedRoute('admin.user.update', [$idUser])   ?>">
-		<?=  \Venancio\Fade\Core\Router::methodPUT() ?>
-	</form>
+    <form action="<?= \Venancio\Fade\Core\Router::getNamedRoute('admin.user.update', [$idUser])   ?>">
+        <?=  \Venancio\Fade\Core\Router::methodPUT() ?>
+    </form>
 ```
 
 ```php
-	<form action="<?= \Venancio\Fade\Core\Router::getNamedRoute('admin.user.destroy', [$idUser])   ?>">
-		<?=  \Venancio\Fade\Core\Router::methodDELETE() ?>
-	</form>
+    <form action="<?= \Venancio\Fade\Core\Router::getNamedRoute('admin.user.destroy', [$idUser])   ?>">
+        <?=  \Venancio\Fade\Core\Router::methodDELETE() ?>
+    </form>
 ```
 
 
