@@ -1,6 +1,6 @@
 {
     "name": "fade/router",
-    "description": "Pacote de gerenciamento de rotas para aplicações PHP",
+    "description": "Object-oriented routing system developed in PHP 8 for general use by the PHP community",
     "autoload": {
         "psr-4": {
             "Venancio\\Fade\\": "src/",
