@@ -103,9 +103,7 @@ To use middleware in a route with **Fade\Router**, use the **middleware()** meth
 
 Often, you want a group of routes to share the same configuration, such as a route prefix, route name prefix, or common middlewares. In **Fade\Router**, you can easily define a route group that shares specific configuration settings.
 
-#### Error Routes (404 and 500
-
-)
+#### Error Routes (404 and 500)
 
 **Fade\Router** provides special handling for 404 (Not Found) and 500 (Internal Server Error) errors. You can set actions to handle these errors by using the **fallbackNotFound()** and **fallbackInternalServerError()** methods.
 
