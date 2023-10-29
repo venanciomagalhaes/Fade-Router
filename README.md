@@ -142,18 +142,20 @@ A tentativa de atribuir um mesmo nome para duas rotas lançará uma exception do
 
 A tentativa de passar mais ou menos parâmetros que o necessário para uma rota nomeada lançará uma exception do tipo ```Venancio\Fade\Core\Exceptions\InsufficientArgumentsForTheRoute```
 
-### Rotas PUT e DELETE - (fazer um método na classe para isso)
-Como, de forma nativa, navegadores não suportam o uso dos métodos PUT e DELETE, para que o roteamento ocorra de maneira adequada é necessário, sempre que desejar enviar uma requisição como PUT ou DELETE fornecer um formulário de método POST um input do tipo hidden de nome _method com o tipo do método HTTP em questão
+### Rotas PUT e DELETE 
+Como, de forma nativa, navegadores não suportam o uso dos métodos PUT e DELETE, para que o roteamento ocorra de maneira adequada é necessário, sempre que desejar enviar uma requisição como PUT ou DELETE fornecer um formulário de método POST um input do tipo hidden de nome _method com o tipo do método HTTP em questão.
+
+Visando facilitar o seu uso, Fade\Router possui métodos estáticos em sua classe que já fazem esse serviço, bastando apenas invocar cada um, respectivamente, ```methodPUT()``` e ```methodDELETE()```
 
 ```php
 	<form action="<?= \Venancio\Fade\Core\Router::getNamedRoute('admin.user.update', [$idUser])   ?>">
-		<input type="hidden" name="_method" value="PUT"/>
+		<?=  \Venancio\Fade\Core\Router::methodPUT() ?>
 	</form>
 ```
 
 ```php
-	<form action="<?= \Venancio\Fade\Core\Router::getNamedRoute('user.store', [$idUser])   ?>">
-		<input type="hidden" name="_method" value="POST"/>
+	<form action="<?= \Venancio\Fade\Core\Router::getNamedRoute('admin.user.destroy', [$idUser])   ?>">
+		<?=  \Venancio\Fade\Core\Router::methodDELETE() ?>
 	</form>
 ```
 

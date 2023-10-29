@@ -542,4 +542,13 @@ class RouterTest extends TestCase
     }
 
 
+    /**
+     * @test
+     */
+    public function verifyHelpersMethodPutAndDelete()
+    {
+        $this->assertEquals("<input type='hidden' name='_method' value='PUT'>",  Router::methodPUT());
+        $this->assertEquals("<input type='hidden' name='_method' value='DELETE'>",  Router::methodDELETE());
+    }
+
 }

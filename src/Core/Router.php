@@ -117,6 +117,16 @@ final class Router
        return self::$mapRoutes->getNamedRoute($name, $params);
     }
 
+    public static function methodPUT(): string
+    {
+        return "<input type='hidden' name='_method' value='PUT'>";
+    }
+
+    public static function methodDELETE(): string
+    {
+        return "<input type='hidden' name='_method' value='DELETE'>";
+    }
+
     public function fallbackNotFound(string $controller, string $method): void
     {
         $this->fallBackNotFoundController = $controller;
