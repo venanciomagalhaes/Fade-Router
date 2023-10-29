@@ -1,4 +1,5 @@
 
+
 # Fade\Router
 
 O Fade\Router é um sistema de roteamento orientado a objetos desenvolvido em PHP 8, criado com o propósito de ser uma solução versátil para toda a comunidade PHP. Nosso objetivo é simplificar o processo de inicialização de uma aplicação PHP, eliminando a necessidade de criar sistemas de roteamento complexos baseados em arrays a cada nova aplicação.
@@ -105,6 +106,24 @@ Não definir as actions de fallback lançará exceptions do tipo:
  2. ```Venancio\Fade\Core\Exceptions\FallbackNotFoundMethodUndefined```
  3. ```Venancio\Fade\Core\Exceptions\FallbackInternalServerErrorControllerUndefined```
  4. ```Venancio\Fade\Core\Exceptions\FallbackInternalServerErrorMethodUndefined```.
+
+### Rotas com parâmetros dinâmicos
+Podemos trabalhar com rotas dinâmicas utilizando Fade\Router, para isso basta indicar o parâmetro dinâmico por meio da sintaxe ```{param}``` :
+````php
+$router->get('/user/{id}', [UserController::class, 'show']);
+````
+Para receber esse parâmetro dinamicamente na controller da rota, basta indicar em seu método que ali será recebido um parâmetro:
+````php
+class UserController
+{
+	public function show(string|int $id):void
+	{
+		echo $id;
+	}
+}
+````
+Caso possua mais de um parâmetro dinâmico, basta inserir a mesma quantidade de parâmetros para recebimento no controller
+
 ### Trabalhando com rotas nomeadas
 No momento da criação de nossas rotas podemos definir um determinado nome para a rota, que poderá ser usado posteriormente, ao longo da aplicação, para referência. **O método ```name()``` sempre deve ser o último no encadeamento de métodos**.
 
@@ -117,7 +136,7 @@ $router->get('/user/{id}', [UserController::class, 'show'])->name('user.show');
 
 Após sua definição, essa rota poderá ser chamada em qualquer lugar da aplicação, utilizando a própria classe ```Venancio\Fade\Core\Router``` por meio do método estático  ``` getNamedRoute()```. Esse método espera por dois parâmetros (sendo o último opcional): o nome da rota e, quando necessário, um array com os parâmetros necessários para a rota:
 ```php
-<a href="<?= Venancio\Fade\Core\Router::getNamedRoute('user.show', [$idUser]) ?>"/>
+<a href="<?= \Venancio\Fade\Core\Router::getNamedRoute('user.show', [$idUser]) ?>"/>
 ```
 A tentativa de atribuir um mesmo nome para duas rotas lançará uma exception do tipo  ```Venancio\Fade\Core\Exceptions\DuplicateNamedRoute``` enquanto uma tentativa de acessar uma rota por meio de um nome inexistente lançará uma exception do tipo ```Venancio\Fade\Core\Exceptions\UndefinedNamedRoute```.
 
@@ -127,13 +146,13 @@ A tentativa de passar mais ou menos parâmetros que o necessário para uma rota 
 Como, de forma nativa, navegadores não suportam o uso dos métodos PUT e DELETE, para que o roteamento ocorra de maneira adequada é necessário, sempre que desejar enviar uma requisição como PUT ou DELETE fornecer um formulário de método POST um input do tipo hidden de nome _method com o tipo do método HTTP em questão
 
 ```php
-	<form action="<?= Venancio\Fade\Core\Router::getNamedRoute('admin.user.update', [$idUser])   ?>">
+	<form action="<?= \Venancio\Fade\Core\Router::getNamedRoute('admin.user.update', [$idUser])   ?>">
 		<input type="hidden" name="_method" value="PUT"/>
 	</form>
 ```
 
 ```php
-	<form action="<?= Venancio\Fade\Core\Router::getNamedRoute('user.store', [$idUser])   ?>">
+	<form action="<?= \Venancio\Fade\Core\Router::getNamedRoute('user.store', [$idUser])   ?>">
 		<input type="hidden" name="_method" value="POST"/>
 	</form>
 ```
