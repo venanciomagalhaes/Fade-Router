@@ -159,6 +159,34 @@ Visando facilitar o seu uso, Fade\Router possui métodos estáticos em sua class
     </form>
 ```
 
+### Middlewares
+
+O middleware é uma camada intermediária de software que atua entre a requisição do cliente e a resposta do servidor. O principal objetivo do middleware é processar e intermediar as requisições HTTP, executando ações ou verificações específicas antes que essas requisições alcancem os controladores da aplicação. Alguns exemplos comuns de tarefas realizadas por middlewares incluem autenticação de usuários, autorização, registro de log, manipulação de cookies, tratamento de exceções, entre outros.
+
+Para utilizar middlewares em uma rota com Fade\Router é muito simples: basta utilizar o método ```middleware()``` passando como parâmetro um array com as classes de middleware que deverão ser executadas. **O método middleware deve sempre ser o primeiro do encadeamento de métodos**. 
+
+````php
+$router->middleware([AuthMiddleware::class, EspecialUserMiddleware::class])->post('/user', [UserController::class, 'store'])->name('user.store');
+````
+As classes de middleware devem obrigatóriamente implementar a interface ```Venancio\Fade\Core\Interfaces\Middleware``` e a trait ```Venancio\Fade\Core\Traits\ParamsMiddleware```. Caso a implementação não seja realizada, será lançada uma exception do tipo ```Venancio\Fade\Core\Exceptions\InvalidTypeMiddleware```.
+
+Toda a lógica do middleware deverá ser chamada no método ```handle()``` de sua classe. **Por padrão todos os middlewares repassam a requisição adiante, a menos que você faça algo para que isso seja impedido**. Ou seja, para que a requisição não chegue ao controller você deverá implementar a partir do método handle sua própria lógica, como no exemplo: 
+
+````php
+class AuthMiddleware implements Middleware
+{
+    use ParamsMiddleware;
+
+    public function handle():void
+    {
+	// insira aqui uma lógica para obter autenticacao
+        if(!$auth){
+           header('Location: /login ');
+        }
+    }
+}
+````
+Além disso, em rotas que possuem parâmetros dinâmicos esses parâmetros podem ser recuperados dentro do middleware utilizando a propriedade ```$this->params```, que retornará um array com os parâmetros dinâmicos na ordem de fornecimento.
 
 ## Contribuições
 
