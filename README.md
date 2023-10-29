@@ -113,7 +113,8 @@ Exceptions related to **Fade\Router** configurations and other unhandled excepti
 
 #### Tests
 
-**Fade\Router** includes more than 38 tests that can be executed with the command `vendor/bin/phpunit tests/ --testdox --colors`.
+**Fade\Router** includes more than 38 tests that can be executed with the command ```composer require phpunit/phpunit --dev``` and
+```vendor/bin/phpunit vendor/fade/router/tests/ --testdox --colors```.
 
 ## Contributions
 
