@@ -1,5 +1,5 @@
 
-## Fade\Router (English) 
+# Fade\Router (English) 
 Para ler em português, acesse: [README-PTBR](https://github.com/venanciomagalhaes/Fade-Router/blob/main/READEME-PTBR.md)
 
 Fade\Router is an object-oriented routing system developed in PHP 8, created with the purpose of being a versatile solution for the entire PHP community. Our goal is to simplify the initialization process of a PHP application, eliminating the need to create complex routing systems based on arrays for each new application.
