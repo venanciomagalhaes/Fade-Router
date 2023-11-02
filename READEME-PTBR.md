@@ -144,7 +144,7 @@ A tentativa de atribuir um mesmo nome para duas rotas lançará uma exception do
 A tentativa de passar mais ou menos parâmetros que o necessário para uma rota nomeada lançará uma exception do tipo ```Venancio\Fade\Core\Exceptions\InsufficientArgumentsForTheRoute```
 
 ### Rotas PUT e DELETE
-Como, de forma nativa, navegadores não suportam o uso dos métodos PUT e DELETE, para que o roteamento ocorra de maneira adequada é necessário, sempre que desejar enviar uma requisição como PUT ou DELETE fornecer um formulário de método POST um input do tipo hidden de nome _method com o tipo do método HTTP em questão.
+Como, de forma nativa os navegadores não suportam o uso dos métodos PUT e DELETE, para que o roteamento ocorra de maneira adequada é necessário, sempre que desejar enviar uma requisição como PUT ou DELETE, fornecer por meio de um formulário de método POST um input do tipo hidden de nome _method com o tipo do método HTTP em questão.
 
 Visando facilitar o seu uso, Fade\Router possui métodos estáticos em sua classe que já fazem esse serviço, bastando apenas invocar cada um, respectivamente, ```methodPUT()``` e ```methodDELETE()```
 
