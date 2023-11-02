@@ -117,7 +117,7 @@ Para receber esse parâmetro dinamicamente na controller da rota, basta indicar 
 ````php
 class UserController
 {
-	public function show(string|int $id):void
+	public function show($id):void
 	{
 		echo $id;
 	}
