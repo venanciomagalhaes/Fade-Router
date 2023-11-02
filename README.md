@@ -244,4 +244,4 @@ This package is licensed under the [MIT](https://github.com/venanciomagalhaes/Fa
 
 Developed with passion by [Venâncio Magalhães](https://www.linkedin.com/in/deividsonvm/).
 
-Questions or Suggestions? Get in touch.
+Questions or Suggestions? Contact us.
