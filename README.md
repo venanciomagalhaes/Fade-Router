@@ -121,7 +121,7 @@ To dynamically receive this parameter in the route's controller, specify in your
 ```php
 class UserController
 {
-    public function show(string|int $id): void
+    public function show($id): void
     {
         echo $id;
     }
