@@ -4,8 +4,8 @@ namespace Venancio\Fade\Core\Log;
 final class Logger
 {
     private static ?self $instance = null;
-    private mixed $fileLogPath = null;
-    private mixed $fileLog = null;
+    private  $fileLogPath = null;
+    private  $fileLog = null;
 
     private function createLogDirectory(): void
     {
@@ -31,9 +31,10 @@ final class Logger
         return self::$instance;
     }
 
-    public function register(\Exception $exception): void
+    public function register(\Throwable $exception): void
     {
-        $date = (new \DateTime())->format('Y-m-d H:i:s');
+        $date = new \DateTime();
+        $date = $date->format('Y-m-d H:i:s');
         $message = "[Error: {$date} - {$exception->getMessage()}\nFile: {$exception->getFile()} - Line {$exception->getLine()}\n{$exception->getTraceAsString()}]\n";
         fwrite($this->fileLog, $message); // Corrija esta linha
     }
