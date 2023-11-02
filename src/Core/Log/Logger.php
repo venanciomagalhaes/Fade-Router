@@ -31,7 +31,7 @@ final class Logger
         return self::$instance;
     }
 
-    public function register(\Exception $exception): void
+    public function register(\Throwable $exception): void
     {
         $date = new \DateTime();
         $date = $date->format('Y-m-d H:i:s');
