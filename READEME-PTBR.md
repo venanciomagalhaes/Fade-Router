@@ -157,6 +157,7 @@ Visando facilitar o seu uso, Fade\Router possui métodos estáticos em sua class
 ```php
     <form method="POST" action="<?= \Venancio\Fade\Core\Router::getNamedRoute('admin.user.destroy', [$idUser])   ?>">
         <?=  \Venancio\Fade\Core\Router::methodDELETE() ?>
+	<input type="submit" value="DELETE">
     </form>
 ```
 
