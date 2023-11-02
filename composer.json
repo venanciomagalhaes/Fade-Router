@@ -1,6 +1,6 @@
 {
     "name": "fade/router",
-    "description": "Object-oriented routing system developed in PHP 8 for general use by the PHP community",
+    "description": "Object-oriented routing system developed in PHP 7.4 for general use by the PHP community",
     "autoload": {
         "psr-4": {
             "Venancio\\Fade\\": "src/",
@@ -14,10 +14,10 @@
         }
     ],
     "require-dev": {
-        "phpunit/phpunit": "^10.4"
+        "phpunit/phpunit": "9.6.*"
     },
     "require": {
-        "php": ">=8.0"
+        "php": ">=7.4"
     },
     "license": "MIT"
 }

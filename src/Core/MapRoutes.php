@@ -29,7 +29,8 @@ final class  MapRoutes
 
     public function getRoutesByMethod(string $method): ?array
     {
-        return $this->getRoutes()[$method];
+        $routes = $this->getRoutes();
+        return $routes[$method];
     }
 
     private function getRouteWithPrefix(string $route): string

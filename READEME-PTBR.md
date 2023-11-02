@@ -3,7 +3,7 @@
 
 # Fade\Router (Português - BR)
 
-O Fade\Router é um sistema de roteamento orientado a objetos desenvolvido em PHP 8, criado com o propósito de ser uma solução versátil para toda a comunidade PHP. Nosso objetivo é simplificar o processo de inicialização de uma aplicação PHP, eliminando a necessidade de criar sistemas de roteamento complexos baseados em arrays a cada nova aplicação.
+O Fade\Router é um sistema de roteamento orientado a objetos desenvolvido em PHP 7.4, criado com o propósito de ser uma solução versátil para toda a comunidade PHP. Nosso objetivo é simplificar o processo de inicialização de uma aplicação PHP, eliminando a necessidade de criar sistemas de roteamento complexos baseados em arrays a cada nova aplicação.
 
 ## Objetivo
 

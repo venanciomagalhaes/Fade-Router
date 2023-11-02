@@ -13,6 +13,10 @@ use Venancio\Fade\Core\Log\Logger;
 
 final class Router
 {
+    const HTTP_SUCCESS_CODE = '200';
+    const HTTP_NOT_FOUND_CODE = '404';
+    const HTTP_INTERNAL_SERVER_ERROR_CODE = '500';
+
     private string $requestMethod;
     private string $requestUri;
 
@@ -224,7 +228,7 @@ final class Router
 
     private function execFallBackInternalServerError(\Throwable $throwable): void
     {
-        call_user_func_array([new ( $this->fallBackInternalServerErrorController),  $this->fallBackInternalServerErrorMethod], [$throwable]);
+        call_user_func_array([new $this->fallBackInternalServerErrorController,  $this->fallBackInternalServerErrorMethod], [$throwable]);
     }
 
     private function getParamsToControllers(): array
@@ -232,15 +236,16 @@ final class Router
         return [...$this->paramsURI];
     }
 
-    private function hasMiddleware(mixed $action): bool
+    private function hasMiddleware(array $action): bool
     {
         return array_key_exists('middlewares', $action);
     }
 
-    private function isValidMiddleware(mixed $middleware): bool
+    private function isValidMiddleware(string $middleware): void
     {
-        if((new $middleware) instanceof Middleware){
-            return true;
+        $middleware = new $middleware;
+        if( $middleware instanceof Middleware){
+            return;
         }
         $exception = new InvalidTypeMiddleware();
         Logger::getInstance()->register($exception);
@@ -260,21 +265,21 @@ final class Router
         }
     }
 
-    private function execMiddlewares(mixed $action): void
+    private function execMiddlewares(array $action): void
     {
         if ($this->hasMiddleware($action)) {
             $this->dispatchMiddleware($action['middlewares']);
         }
     }
     
-    private function execAction(mixed $action): void
+    private function execAction(array $action): void
     {
         $controller = $action[0];
         $method = $action[1];
-        call_user_func_array([new ($controller), $method], $this->getParamsToControllers());
+        call_user_func_array([new $controller, $method], $this->getParamsToControllers());
     }
 
-    private function isCurrentURI(int|string $route): bool
+    private function isCurrentURI(string $route): bool
     {
         return $this->requestUri == $route;
     }
@@ -286,23 +291,23 @@ final class Router
                if ($this->isCurrentURI($route)) {
                    $this->execMiddlewares($action);
                    $this->execAction($action);
-                   return '200';
+                   return self::HTTP_SUCCESS_CODE;
                }
            }
        } catch (NotFound $exception) {
            Logger::getInstance()->register($exception);
            $this->execFallBackNotFound();
-           return '404';
+           return self::HTTP_NOT_FOUND_CODE;
        } catch (\Throwable $throwable){
            Logger::getInstance()->register($throwable);
            $this->execFallBackInternalServerError($throwable);
-           return '500';
+           return self::HTTP_INTERNAL_SERVER_ERROR_CODE;
        }
     }
 
     private function execFallBackNotFound(): string
     {
-        call_user_func_array([new ($this->fallBackNotFoundController),  $this->fallBackNotFoundMethod], []);
+        call_user_func_array([new $this->fallBackNotFoundController,  $this->fallBackNotFoundMethod], []);
         return '404';
     }
 
@@ -321,7 +326,4 @@ final class Router
     {
         return self::$mapRoutes->getRoutes();
     }
-
-
-
 }
