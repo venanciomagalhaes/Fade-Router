@@ -166,6 +166,7 @@ To simplify this, Fade\Router provides static methods in its class that handle t
 ```php
 <form method="POST" action="<?= \Venancio\Fade\Core\Router::getNamedRoute('admin.user.destroy', [$idUser]) ?>">
     <?= \Venancio\Fade\Core\Router::methodDELETE() ?>
+    <input type="submit" value="DELETE">
 </form>
 ```
 
