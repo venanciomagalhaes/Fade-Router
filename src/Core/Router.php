@@ -181,6 +181,7 @@ final class Router
      * Set the group middleware based on the provided options.
      *
      * @param array $options An array of options that may include 'middleware'.
+     * @throws InvalidTypeMiddleware
      */
     private function setGroupMiddleware(array $options): void
     {
@@ -224,10 +225,9 @@ final class Router
      *
      * This method retrieves the URL for a named route, allowing you to specify optional parameters. Named routes are useful for generating URLs dynamically based on route names and parameters.
      *
-     * @param string $name The name of the named route.
-     * @param array $params (Optional) An associative array of parameters to be used in the route. These parameters will replace placeholders in the route pattern.
-     *
-     * @return string The URL for the named route with optional parameters.
+     * @param array $middlewares
+     * @return Router The URL for the named route with optional parameters.
+     * @throws InvalidTypeMiddleware
      */
     public function middleware(array $middlewares):self
     {
@@ -461,7 +461,8 @@ final class Router
      * This method retrieves the parameters extracted from the current request's URI and returns them as an array.
      * These parameters are typically used as arguments when invoking controller methods.
      *
-     * @return array An array containing parameters extracted from the URI.
+     * @param \Throwable $throwable
+     * @return void
      */
     private function execFallBackInternalServerError(\Throwable $throwable): void
     {
