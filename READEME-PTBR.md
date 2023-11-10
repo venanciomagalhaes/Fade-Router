@@ -125,7 +125,7 @@ class UserController
 	}
 }
 ````
-Caso possua mais de um parâmetro dinâmico, basta inserir a mesma quantidade de parâmetros para recebimento no controller
+Caso possua mais de um parâmetro dinâmico, basta inserir a mesma quantidade de parâmetros para recebimento no controller.  No seu controlador, utilize a superglobal ```$_REQUEST``` para obter o corpo da sua requisição. Esta superglobal é processada durante o roteamento para possibilitar essa operação.
 
 ### Trabalhando com rotas nomeadas
 No momento da criação de nossas rotas podemos definir um determinado nome para a rota, que poderá ser usado posteriormente, ao longo da aplicação, para referência. **O método ```name()``` sempre deve ser o último no encadeamento de métodos**.
