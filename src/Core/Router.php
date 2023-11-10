@@ -76,6 +76,27 @@ final class Router
         $this->requestUri = $_GET['url'] ?? $_SERVER['REQUEST_URI'];
         $this->requestMethod = $_POST['_method'] ?? $_SERVER['REQUEST_METHOD'];
         self::$mapRoutes = new MapRoutes();
+        $this->setRequest();
+    }
+
+    /**
+     * Configures the $_REQUEST variable based on the request method.
+     *
+     * This function checks the request method (POST, PUT, DELETE) and configures the $_REQUEST
+     * variable accordingly. If the method is POST, PUT, or DELETE, the variable is set with
+     * data from $_POST; otherwise, it is set with data from $_GET.
+     *
+     * @return void
+     */
+    private function setRequest():void
+    {
+        if($this->requestMethod == 'POST' || $this->requestMethod == 'PUT' || $this->requestMethod == 'DELETE'){
+            if(isset($_POST)){
+                $_REQUEST = $_POST;
+            };
+            return;
+        }
+        $_REQUEST = $_GET;
     }
 
     /**
