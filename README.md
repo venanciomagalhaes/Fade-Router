@@ -130,7 +130,8 @@ class UserController
 }
 ```
 
-If you have more than one dynamic parameter, simply provide the same number of parameters in the controller for reception.
+If you have more than one dynamic parameter, simply provide the same number of parameters in the controller for reception.  In your controller, use the $_REQUEST superglobal to retrieve the body of your request.
+ * This superglobal is processed during routing to enable thi
 
 ### Working with Named Routes
 
