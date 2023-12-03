@@ -44,13 +44,31 @@ final class Logger
      */
     private function createLogDirectory(): void
     {
-        $this->fileLogPath = 'logs/fade/router.log';
+        $this->setFileLogPath();
         $logDirectory = dirname($this->fileLogPath);
         if (!is_dir($logDirectory)) {
             if (!mkdir($logDirectory, 0777, true)) {
                 throw new \RuntimeException("Failed to create log directory: {$logDirectory}");
             }
         }
+    }
+
+    /**
+     * Sets the file log path.
+     *
+     * Checks for the existence of the 'DOCUMENT_ROOT' key in $_SERVER to define the log file path.
+     * If the key exists, it uses $_SERVER['DOCUMENT_ROOT'] to build the path.
+     * Otherwise, it sets a default path.
+     *
+     * @return void
+     */
+    public function setFileLogPath():void
+    {
+        if(array_key_exists('DOCUMENT_ROOT', $_SERVER)){
+            $this->fileLogPath = $_SERVER['DOCUMENT_ROOT'] . '/../logs/fade/router.log';
+            return;
+        }
+        $this->fileLogPath = 'logs/fade/router.log';
     }
 
     /**
@@ -82,6 +100,6 @@ final class Logger
         $date = new \DateTime();
         $date = $date->format('Y-m-d H:i:s');
         $message = "[Error: {$date} - {$exception->getMessage()}\nFile: {$exception->getFile()} - Line {$exception->getLine()}\n{$exception->getTraceAsString()}]\n";
-        fwrite($this->fileLog, $message); // Corrija esta linha
+        fwrite($this->fileLog, $message);
     }
 }
